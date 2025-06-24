@@ -11,20 +11,20 @@ import {
 } from "@/data";
 
 const getFilteredItems = (needCount: number, query: string) => {
-  const result: Item[] = [];
+  const filteredItems: Item[] = [];
   let items: Item[] = ITEMS;
 
   if (!query) {
     return items.slice(0, needCount);
   }
 
-  for (let i = 0; result.length < needCount; i++) {
+  for (let i = 0; filteredItems.length < needCount; i++) {
     if (items[i].name.toLowerCase().includes(query)) {
-      result.push(items[i]);
+      filteredItems.push(items[i]);
     }
   }
 
-  return result;
+  return filteredItems;
 };
 
 export const getItem = async (req: Request, res: Response) => {
@@ -72,10 +72,7 @@ export const postSelectById = async (req: Request, res: Response) => {
 };
 
 export const getSelected = async (req: Request, res: Response) => {
-  const selected = Array.from(selectedIds)
-    .filter(isValidId)
-    .map((id) => ITEMS[id - 1]);
-  res.status(200).json({ items: selected });
+  res.status(200).json({ selectedIds: Array.from(selectedIds) });
 };
 
 export const postReorderItems = async (req: Request, res: Response) => {
