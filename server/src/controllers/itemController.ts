@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import {
+  customFilteredOrder,
   customOrder,
-  customQueryOrder,
   Item,
   ITEMS,
   ITEMS_LENGTH,
@@ -11,14 +11,14 @@ import {
 } from "@/data";
 
 const getFilteredItems = (needCount: number, query: string) => {
+  if (!query) {
+    return ITEMS.slice(0, needCount);
+  }
+
   const filteredItems: Item[] = [];
   let items: Item[] = ITEMS;
 
-  if (!query) {
-    return items.slice(0, needCount);
-  }
-
-  for (let i = 0; filteredItems.length < needCount; i++) {
+  for (let i = 0; filteredItems.length < needCount && i < items.length; i++) {
     if (items[i].name.toLowerCase().includes(query)) {
       filteredItems.push(items[i]);
     }
@@ -27,51 +27,50 @@ const getFilteredItems = (needCount: number, query: string) => {
   return filteredItems;
 };
 
+const isValidId = (id: number): boolean => {
+  return id >= 1 && id <= ITEMS_LENGTH;
+};
+
 export const getItem = async (req: Request, res: Response) => {
   const limit = Math.min(parseInt(req.query.limit as string) || 20, 100);
   const offset = Math.min(parseInt(req.query.offset as string) || 0);
   const pageEnd = offset + limit;
+
   if (pageEnd > ITEMS.length) {
     res.status(200).json({ items: [], total: 0 });
     return;
   }
 
   const query = (req.query.q as string)?.toLowerCase() || "";
-  let filteredItems = getFilteredItems(pageEnd, query);
-  let orderItems = customOrder;
-  if (query) {
-    orderItems = customQueryOrder;
-  }
+  let orderItems = query ? customFilteredOrder : customOrder;
+  let filteredItems = getFilteredItems(Math.max(orderItems.length, pageEnd), query);
 
   if (orderItems?.length > 0 && orderItems.length >= pageEnd) {
     filteredItems = filteredItems.sort((a, b) => orderItems.indexOf(a.id) - orderItems.indexOf(b.id));
   }
 
   const page = filteredItems.slice(offset, pageEnd);
-  res.status(200).json({ items: page, total: filteredItems.length });
-};
-
-const isValidId = (id: number): boolean => {
-  return id >= 1 && id <= ITEMS_LENGTH;
+  res.status(200).json({ items: page, total: page.length });
 };
 
 export const postSelectById = async (req: Request, res: Response) => {
-  const { ids, selected } = req.body as { ids: number[]; selected: boolean };
+  const { id } = req.body as { id: number };
 
-  if (!Array.isArray(ids) || !ids.every(Number.isInteger)) {
-    res.status(400).json({ error: "Invalid id array" });
+  if (!isValidId(id)) {
+    res.status(400).json({ error: "Invalid ID range" });
     return;
   }
 
-  ids.filter(isValidId).forEach((id) => {
-    if (selected) selectedIds.add(id);
-    else selectedIds.delete(id);
-  });
+  if (selectedIds.has(id)) {
+    selectedIds.delete(id);
+  } else {
+    selectedIds.add(id);
+  }
 
   res.status(200).json({ success: true, selectedCount: selectedIds.size });
 };
 
-export const getSelected = async (req: Request, res: Response) => {
+export const getSelected = async (_: Request, res: Response) => {
   res.status(200).json({ selectedIds: Array.from(selectedIds) });
 };
 
@@ -83,6 +82,7 @@ export const postReorderItems = async (req: Request, res: Response) => {
     return;
   }
 
+  setCustomFilteredOrder([]);
   isQuery ? setCustomFilteredOrder(ids) : setCustomOrder(ids);
   res.status(200).json({ success: true });
 };

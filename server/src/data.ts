@@ -12,13 +12,12 @@ export const ITEMS_LENGTH = ITEMS.length;
 
 export const selectedIds = new Set<number>();
 export let customOrder: number[] = [];
+export let customFilteredOrder: number[] = [];
 
 export const setCustomOrder = (ids: number[]) => {
   customOrder = ids;
 };
 
-export let customQueryOrder: number[] = [];
-
 export const setCustomFilteredOrder = (ids: number[]) => {
-  customQueryOrder = ids;
+  customFilteredOrder = ids;
 };

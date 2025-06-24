@@ -1,15 +1,31 @@
 import express from "express";
+import dotenv from "dotenv";
 import cors from "cors";
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./swagger";
 import itemRouter from "@/routes/itemRouter";
 
+dotenv.config();
 const app = express();
-const HOSTNAME = "127.0.0.1";
-const PORT = 3001;
+const CLIENT_URL = process.env.CLIENT_URL;
+const HOSTNAME = process.env.HOSTNAME;
+const PORT = process.env.PORT || 3000;
 const DOCS_ROUTE = "/api-docs";
 
-app.use(cors());
+const allowedOrigins = [CLIENT_URL];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  }),
+);
 app.use(express.json());
 app.use(DOCS_ROUTE, swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use("/items", itemRouter);
@@ -27,6 +43,6 @@ app.use("/items", itemRouter);
  *           type: string
  */
 app.listen(PORT, () => {
-  console.log(`Server running at http://${HOSTNAME}:${PORT}`);
-  console.log(`Docs available at http://${HOSTNAME}:${PORT}${DOCS_ROUTE}`);
+  console.log(`Server running at ${HOSTNAME}:${PORT}`);
+  console.log(`Docs available at ${HOSTNAME}:${PORT}${DOCS_ROUTE}`);
 });
