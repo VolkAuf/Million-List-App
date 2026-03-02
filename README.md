@@ -17,14 +17,18 @@
 
 ## 👨‍💻 Демонстрация работы
 
+Ссылки:
+[Клиент](https://million-list-app-client.onrender.com/)
+[Сервер](https://million-list-app.onrender.com/api-docs/)
+
 ![Демонстрация работы](./assets/demo_billionList_Work_Cut.gif)
 
 ## 🚀 Как запустить
 
 1. Клонируйте репозиторий:
   ```bash
-  git clone https://github.com/your-name/your-repo.git
-  cd your-repo
+  git clone https://github.com/VolkAuf/Million-List-App.git
+  cd Million-List-App
   ```
 2. Установите зависимости:
   ```bash
